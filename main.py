@@ -3,7 +3,7 @@ from db import main_db
 
 
 def main(page: ft.Page):
-    page.title = 'Todo List'
+    page.title = 'Shop List'
     page.theme_mode = ft.ThemeMode.DARK
     page.window_maximized = True
 
@@ -12,22 +12,22 @@ def main(page: ft.Page):
 
     def load_tasks():
         task_list.controls.clear()
-        for task_id, task_text, completed in main_db.get_tasks(filter_type):
-            task_list.controls.append(create_task_row(task_id, task_text, completed))
+        for task_id, task_text, bought in main_db.get_tasks(filter_type):
+            task_list.controls.append(create_task_row(task_id, task_text, bought))
         page.update()
 
-    def create_task_row(task_id, task_text, completed):
+    def create_task_row(task_id, task_text, bought):
         task_field = ft.TextField(value=task_text, expand=True, dense=True, read_only=True)
         in_work = ft.Checkbox(
-            label="В процессе",
-            value=(completed == 1),
+            label="Нужно купить",
+            value=(bought == 1),
             tristate=False,
             on_change=lambda e: toggle_in_work(task_id, e.control.value)
         )
 
         task_done = ft.Checkbox(
-            label="Завершено",
-            value=(completed == 2),
+            label="Куплено",
+            value=(bought == 2),
             tristate=False,
             on_change=lambda e: toggle_task(task_id, e.control.value)
         )
@@ -59,9 +59,9 @@ def main(page: ft.Page):
             task_input.value = ""
             page.update()
 
-    def toggle_task(task_id, is_completed):
-        status = 2 if is_completed else 0
-        main_db.update_task_db(task_id, completed=status)
+    def toggle_task(task_id, is_bought):
+        status = 2 if is_bought else 0
+        main_db.update_task_db(task_id, bought=status)
         load_tasks()
 
     def toggle_in_work(task_id, is_in_work):
@@ -80,35 +80,35 @@ def main(page: ft.Page):
         filter_type = filter_value
         load_tasks()
 
-    def completed_procentage():
-        completed_tasks = main_db.get_tasks("completed")
+    def bought_count():
+        bought_tasks = main_db.get_tasks("bought")
         all_tasks = main_db.get_tasks()
         if all_tasks:
-            return len(completed_tasks) / len(all_tasks) * 100
+            return len(bought_tasks) / len(all_tasks) * 100
         
         return 0
     
-    def clean_complited(e):
-        main_db.delete_completed_tasks()
+    def clean_bought(e):
+        main_db.delete_bought_tasks()
         load_tasks()
 
 
-    task_input = ft.TextField(hint_text='Добавьте задачу', expand=True, dense=True, on_submit=add_task)
+    task_input = ft.TextField(hint_text='Добавьте товар', expand=True, dense=True, on_submit=add_task)
     add_button = ft.ElevatedButton("Добавить", on_click=add_task, icon=ft.Icons.ADD)
 
     filter_buttons = ft.Row([
-        ft.ElevatedButton("Очистить выполненные", on_click=clean_complited),
+        ft.ElevatedButton("Очистить куплинные", on_click=clean_bought),
         ft.ElevatedButton("Все", on_click=lambda e: set_filter("all")),
-        ft.ElevatedButton("Выполненные", on_click=lambda e: set_filter("completed")),
-        ft.ElevatedButton("В процессе", on_click=lambda e: set_filter("inwork")),
-        ft.ElevatedButton("Невыполненные", on_click=lambda e: set_filter("incomplete")),
+        ft.ElevatedButton("Куплинные", on_click=lambda e: set_filter("bought")),
+        ft.ElevatedButton("Нужно купить", on_click=lambda e: set_filter("need_bought")),
+        ft.ElevatedButton("Не куплинные", on_click=lambda e: set_filter("not_bought")),
     ], alignment=ft.MainAxisAlignment.CENTER)
 
     content = ft.Container(
         content=ft.Column([
             ft.Row([task_input, add_button], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             filter_buttons,
-            ft.Text(f"Процент выполненных задач: {completed_procentage():.2f}%", size=16),
+            ft.Text(f"Процент купленных продуктов: {bought_count():.2f}%", size=16),
             ft.Divider(),
             task_list
         ], alignment=ft.MainAxisAlignment.CENTER),

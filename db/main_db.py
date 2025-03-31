@@ -16,7 +16,7 @@ def get_tasks(filter_type="all"):
     cursor = conn.cursor()
 
     if filter_type == 'completed':
-        cursor.execute(queries.SELECT_COMPLETED)
+        cursor.execute(queries.SELECT_BOUGHT)
     elif filter_type == 'incomplete':
         cursor.execute(queries.SELECT_INCOMPLETE)
     elif filter_type == 'inwork':
@@ -39,14 +39,14 @@ def add_task_db(task):
     return task_id
 
 
-def update_task_db(task_id, new_task=None, completed=None):
+def update_task_db(task_id, new_task=None, bought=None):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     if new_task is not None:
         cursor.execute("UPDATE tasks SET task = ? WHERE id = ?", (new_task, task_id))
-    if completed is not None:
-        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (completed, task_id))
+    if bought is not None:
+        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (bought, task_id))
 
     conn.commit()
     conn.close()
@@ -67,7 +67,7 @@ def delete_task_db(task_id):
     conn.commit()
     conn.close()
 
-def delete_completed_tasks():
+def delete_bought_tasks():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(queries.DELETE_COMLETED)
